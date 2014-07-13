@@ -11,15 +11,19 @@ import SpriteKit
 class GameScene: SKScene {
 
     var bg:Background
+    var player:Player
 
     init(coder aDecoder: NSCoder!) {
         bg = Background()
+        player = Player()
         super.init(coder: aDecoder)
     }
     init(size: CGSize) {
         bg = Background()
+        player = Player()
         super.init(size: size)
     }
+
     override func didMoveToView(view: SKView) {
         /* Setup your scene here */
         self.backgroundColor = UIColor.blackColor()
@@ -28,32 +32,41 @@ class GameScene: SKScene {
         bg.position = CGPoint(x:CGRectGetMidX(self.frame), y:CGRectGetMidY(self.frame))
         self.addChild(bg)
 
-        let myLabel = SKLabelNode(fontNamed:"Chalkduster")
-        myLabel.text = "Hello, World!"
-        myLabel.fontSize = 45
-        myLabel.position = CGPoint(x:CGRectGetMidX(self.frame), y:CGRectGetMidY(self.frame))
-        myLabel.zPosition = 1
-        self.addChild(myLabel)
+        player.zPosition = 10
+        player.position = CGPoint(x:CGRectGetMidX(self.frame), y:player.size.height + 10)
+        self.addChild(player)
     }
 
-    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
-        /* Called when a touch begins */
-        
+    override func touchesMoved(touches: NSSet, withEvent event: UIEvent!) {
         for touch: AnyObject in touches {
             let location = touch.locationInNode(self)
+            if location.y < CGRectGetMaxY(player.frame) {
+                continue
+            }
+
+            player.lookAt(location)
+        }
+    }
+
+    override func touchesEnded(touches: NSSet, withEvent event: UIEvent!) {
+        for touch: AnyObject in touches {
+            let location = touch.locationInNode(self)
+            let laser = SKSpriteNode(imageNamed: "laserGreen.png")
             
-            let sprite = SKSpriteNode(imageNamed:"player.png")
-            
-            sprite.xScale = 1
-            sprite.yScale = 1
-            sprite.position = location
-            sprite.zPosition = 2
-            
-            let action = SKAction.rotateByAngle(CGFloat(M_PI), duration:1)
-            
-            sprite.runAction(SKAction.repeatActionForever(action))
-            
-            self.addChild(sprite)
+            player.lookAt(location)
+            switch player.lastFired {
+            case .Left:
+                laser.position = CGPoint(x: CGRectGetMaxX(player.frame), y: CGRectGetMidY(player.frame))
+                player.lastFired = .Right
+            case .Right:
+                laser.position = CGPoint(x: CGRectGetMinX(player.frame), y: CGRectGetMidY(player.frame))
+                player.lastFired = .Left
+            }
+            laser.lookAt(location)
+            laser.runAction(SKAction.moveTo(location, duration: 0.66), completion:{
+                self.removeChildrenInArray([laser])
+                })
+            self.addChild(laser)
         }
     }
    

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		947AFC081971F92800ABF040 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 947AFC071971F92800ABF040 /* Player.swift */; };
 		9492319E1971CFCF009A64F5 /* Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9492319D1971CFCF009A64F5 /* Background.swift */; };
 		94A99404197189E300D70C0D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A99403197189E300D70C0D /* AppDelegate.swift */; };
 		94A99408197189E300D70C0D /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94A99407197189E300D70C0D /* GameScene.swift */; };
@@ -28,6 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		947AFC071971F92800ABF040 /* Player.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		9492319D1971CFCF009A64F5 /* Background.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Background.swift; sourceTree = "<group>"; };
 		94A993FE197189E300D70C0D /* flingInvaders.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = flingInvaders.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		94A99402197189E300D70C0D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -81,13 +83,14 @@
 		94A99400197189E300D70C0D /* flingInvaders */ = {
 			isa = PBXGroup;
 			children = (
+				94A99401197189E300D70C0D /* Supporting Files */,
 				94A994281971A19000D70C0D /* Textures */,
 				94A99403197189E300D70C0D /* AppDelegate.swift */,
+				9492319D1971CFCF009A64F5 /* Background.swift */,
 				94A99407197189E300D70C0D /* GameScene.swift */,
 				94A99409197189E300D70C0D /* GameViewController.swift */,
 				94A9940B197189E300D70C0D /* Main.storyboard */,
-				94A99401197189E300D70C0D /* Supporting Files */,
-				9492319D1971CFCF009A64F5 /* Background.swift */,
+				947AFC071971F92800ABF040 /* Player.swift */,
 			);
 			path = flingInvaders;
 			sourceTree = "<group>";
@@ -229,6 +232,7 @@
 				94A99408197189E300D70C0D /* GameScene.swift in Sources */,
 				94A9940A197189E300D70C0D /* GameViewController.swift in Sources */,
 				94A99404197189E300D70C0D /* AppDelegate.swift in Sources */,
+				947AFC081971F92800ABF040 /* Player.swift in Sources */,
 				9492319E1971CFCF009A64F5 /* Background.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
