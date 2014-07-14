@@ -16,6 +16,15 @@ extension SKSpriteNode {
     }
 }
 
+func randFloat(min:CGFloat, max:CGFloat) -> CGFloat {
+    return (CGFloat(arc4random())/0x100000000) * (max-min) + min
+}
+
+func randPoint(bounds:CGRect) -> CGPoint {
+    return CGPoint(x: randFloat(CGRectGetMinX(bounds), CGRectGetMaxX(bounds)),
+        y: randFloat(CGRectGetMinY(bounds), CGRectGetMaxY(bounds)))
+}
+
 class GameScene: SKScene {
 
     var lastTime = NSDate().timeIntervalSinceReferenceDate
@@ -23,6 +32,7 @@ class GameScene: SKScene {
     var player:Player
     var unlocked = false
     var flingBegan = CGPointZero
+    var meteors = [Meteor]()
 
     init(coder aDecoder: NSCoder!) {
         bg = Background()
@@ -49,6 +59,12 @@ class GameScene: SKScene {
 
         var flingRecognizer = UIPanGestureRecognizer(target: self, action:"fling:")
         self.view.addGestureRecognizer(flingRecognizer)
+
+        for _ in 1...6 {
+            var meteor = Meteor(bounds: self.frame)
+            self.meteors += meteor
+            self.addChild(meteor)
+        }
     }
 
     func fling(recognizer:UIPanGestureRecognizer) {
@@ -82,10 +98,21 @@ class GameScene: SKScene {
         }
     }
 
+    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
+        for touch: AnyObject in touches {
+            let touchLocation = touch.locationInNode(self)
+            self.player.lookAt(touchLocation)
+        }
+    }
+
     override func update(currentTime: CFTimeInterval) {
         /* Called before each frame is rendered */
         bg.update(currentTime)
         player.update(currentTime - self.lastTime)
         self.lastTime = currentTime
+
+        for m in self.meteors {
+            m.update(currentTime - self.lastTime)
+        }
     }
 }

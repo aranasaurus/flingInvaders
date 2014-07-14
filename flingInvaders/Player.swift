@@ -8,10 +8,6 @@
 
 import SpriteKit
 
-enum LaserSide {
-    case Right, Left
-}
-
 class Player:SKSpriteNode {
 
     var lasers:[Laser]
