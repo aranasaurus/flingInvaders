@@ -12,21 +12,11 @@ enum LaserSide {
     case Right, Left
 }
 
-extension SKSpriteNode {
-    func lookAt(location: CGPoint) {
-        let dx = location.x - self.position.x
-        let dy = location.y - self.position.y
-        self.zRotation = atan2(dy, dx) - M_PI_2
-    }
-}
-
 class Player:SKSpriteNode {
 
-    var lastFired: LaserSide
     var lasers:[Laser]
 
     init() {
-        lastFired = .Right
         lasers = [
             Laser(velocity: CGPointZero, imageNamed: "laserGreen.png"),
             Laser(velocity: CGPointZero, imageNamed: "laserGreen.png"),
@@ -37,7 +27,7 @@ class Player:SKSpriteNode {
         super.init(texture: tx, color: UIColor.clearColor(), size: tx.size())
     }
 
-    func fireAt(targetLoc:CGPoint, velocity:CGPoint) {
+    func fire(sourceLoc:CGPoint, targetLoc:CGPoint, touchVelocity:CGPoint) {
         var laser = self.lasers[0] // temporarily store a value in 'laser'
         var foundInactive = false
         for l in self.lasers {
@@ -53,17 +43,28 @@ class Player:SKSpriteNode {
             return
         }
 
+        let damper = 0.33
+        let velocity = CGPoint(x:touchVelocity.x * damper, y:-touchVelocity.y * damper)
         laser.velocity = velocity
         laser.active = true
-        switch self.lastFired {
-        case .Left:
-            laser.position = CGPoint(x: CGRectGetMaxX(self.frame), y: CGRectGetMidY(self.frame))
-            self.lastFired = .Right
-        case .Right:
+
+        // Fire from left/right/center of ship based on where the fling began
+        let center = CGRectGetMidX(self.scene.frame)
+        let fudge = self.size.width/2
+        if sourceLoc.x <= center - fudge {
             laser.position = CGPoint(x: CGRectGetMinX(self.frame), y: CGRectGetMidY(self.frame))
-            self.lastFired = .Left
+        } else if sourceLoc.x >= center + fudge {
+            laser.position = CGPoint(x: CGRectGetMaxX(self.frame), y: CGRectGetMidY(self.frame))
+        } else {
+            laser.position = CGPoint(x: CGRectGetMidX(self.frame), y: CGRectGetMidY(self.frame))
         }
-        let targetLoc = CGPoint(x: laser.position.x + (laser.velocity.x*3), y: laser.position.y + (laser.velocity.y*3))
+
+        // move target ahead 1 second at a time until it is offscreen
+        var targetLoc = CGPoint(x: laser.position.x + laser.velocity.x, y: laser.position.y + laser.velocity.y)
+        while targetLoc.y < CGRectGetMaxY(self.scene.frame) {
+            NSLog("here")
+            targetLoc = CGPoint(x: targetLoc.x + laser.velocity.x, y: targetLoc.y + laser.velocity.y)
+        }
         laser.lookAt(targetLoc)
         self.lookAt(targetLoc)
         self.scene.addChild(laser)

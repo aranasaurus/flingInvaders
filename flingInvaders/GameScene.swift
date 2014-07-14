@@ -8,12 +8,21 @@
 
 import SpriteKit
 
+extension SKSpriteNode {
+    func lookAt(location: CGPoint) {
+        let dx = location.x - self.position.x
+        let dy = location.y - self.position.y
+        self.zRotation = atan2(dy, dx) - M_PI_2
+    }
+}
+
 class GameScene: SKScene {
 
     var lastTime = NSDate().timeIntervalSinceReferenceDate
     var bg:Background
     var player:Player
     var unlocked = false
+    var flingBegan = CGPointZero
 
     init(coder aDecoder: NSCoder!) {
         bg = Background()
@@ -48,15 +57,16 @@ class GameScene: SKScene {
         let mag = fabs(touchVelocity.x) + fabs(touchVelocity.y)
 
         switch recognizer.state {
+        case .Began:
+            self.flingBegan = touchLocation
         case .Ended:
             // don't fire when velocity is too low
             if mag < 650 {
                 break
             }
-            let damper = 0.33
-            let velocity = CGPoint(x:touchVelocity.x * damper, y:-touchVelocity.y * damper)
-            player.fireAt(touchLocation, velocity: velocity)
+            player.fire(self.flingBegan, targetLoc: touchLocation, touchVelocity: touchVelocity)
             unlocked = false
+            self.flingBegan = CGPointZero
         case .Cancelled, .Failed:
             unlocked = false
         case .Changed:
