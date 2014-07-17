@@ -16,6 +16,20 @@ class Laser: SKSpriteNode {
         self.velocity = velocity
         let texture = SKTexture(imageNamed: imageNamed)
         super.init(texture: texture, color: UIColor.clearColor(), size: texture.size())
+
+        self.xScale = 0.66
+        self.yScale = 0.66
+
+        self.configurePhysicsBody()
+    }
+
+    func configurePhysicsBody() {
+        let pb = SKPhysicsBody(rectangleOfSize: self.frame.size)
+        pb.dynamic = false
+        pb.categoryBitMask = ColliderType.Laser.toRaw()
+        pb.contactTestBitMask = ColliderType.Meteor.toRaw() | ColliderType.Wall.toRaw()
+        pb.collisionBitMask = ColliderType.Meteor.toRaw() | ColliderType.Wall.toRaw()
+        self.physicsBody = pb
     }
 
     func update(updateTime:NSTimeInterval) {

@@ -8,49 +8,72 @@
 
 import SpriteKit
 
-class Meteor: SKNode {
+enum MeteorType {
+    case Small
+    case Big
+}
 
-    var movement = SKAction.moveByX(randFloat(-100, 100), y: randFloat(-100, 100), duration: 1)
-    var lastReversal = NSDate(timeIntervalSinceNow: -100)
+class Meteor: SKSpriteNode {
+
+    var meteorType: MeteorType
     convenience init(bounds:CGRect) {
-        self.init(position:randPoint(bounds))
+        self.init(position:randPoint(bounds), meteorType:.Big)
     }
-    init(position:CGPoint) {
-        super.init()
+    init(position:CGPoint, meteorType:MeteorType) {
+        self.meteorType = meteorType
+        let imageNamed = meteorType == .Small ? "meteorSmall.png" : "meteorBig.png"
+        let tx = SKTexture(imageNamed: imageNamed)
+        super.init(texture: tx, color: UIColor.clearColor(), size: tx.size())
         self.position = position
-        self.addChunk("meteorBig.png")
-        self.runAction(SKAction.repeatActionForever(self.movement), withKey:"movement")
+        self.xScale = 0.66
+        self.yScale = 0.66
     }
 
     func hit() {
-        if self.children.count == 1 {
-            self.removeAllChildren()
-            self.addChunk("meteorSmall.png")
-            self.addChunk("meteorSmall.png")
-        } else {
-            self.removeAllChildren()
+        switch self.meteorType {
+        case .Small:
+            NSLog("+10")
             self.removeFromParent()
-            // TODO: Score some points!
+        case .Big:
             NSLog("+1")
+
+            let m1 = Meteor(position: self.position, meteorType: .Small)
+            self.parent.addChild(m1)
+            m1.activate()
+
+            let m2 = Meteor(position: self.position, meteorType: .Small)
+            self.parent.addChild(m2)
+            m2.activate()
+
+            self.removeFromParent()
         }
     }
 
-    func addChunk(imageNamed:NSString) {
-        let rots = Double(randFloat(0.05, 1.3))
-        let rotAction = SKAction.rotateByAngle(M_PI * rots, duration: 1)
-        let chunk = SKSpriteNode(imageNamed: imageNamed)
-        chunk.runAction(SKAction.repeatActionForever(rotAction))
-        self.addChild(chunk)
-    }
-
-    func update(deltaTime:NSTimeInterval) {
-        if (self.lastReversal.timeIntervalSinceNow > -5) {
-            return
+    func activate() {
+        let pb = SKPhysicsBody(rectangleOfSize: self.calculateAccumulatedFrame().size)
+        pb.categoryBitMask = ColliderType.Meteor.toRaw()
+        // TODO: determine if texture based physics body shapes are available and use those, then add
+        // meteors to the collision bit mask, so that meteors will bump into each other.
+        pb.collisionBitMask = ColliderType.Wall.toRaw() //| ColliderType.Meteor.toRaw()
+        pb.contactTestBitMask = ColliderType.Laser.toRaw() | ColliderType.Ship.toRaw() | ColliderType.Wall.toRaw()
+        pb.friction = 0
+        pb.restitution = 1
+        pb.linearDamping = 0
+        pb.angularDamping = 0
+        pb.mass = 20
+        if self.meteorType == .Small {
+            pb.mass = pb.mass/2
         }
-        if !self.parent.frame.contains(self.calculateAccumulatedFrame()) {
-            self.movement = self.movement.reversedAction()
-            self.runAction(SKAction.repeatActionForever(self.movement), withKey:"movement")
-            self.lastReversal = NSDate()
+        pb.allowsRotation = true
+        self.physicsBody = pb
+
+        switch self.meteorType {
+        case .Big:
+            pb.applyImpulse(CGVectorMake(randFloat(-120, 120), randFloat(-120, 120)))
+            pb.applyAngularImpulse(randFloat(-1.2, 1.2))
+        case .Small:
+            pb.applyImpulse(CGVectorMake(randFloat(-180, 180), randFloat(-180, 180)))
+            pb.applyAngularImpulse(randFloat(-0.3, 0.3))
         }
     }
 }

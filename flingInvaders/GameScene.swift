@@ -8,6 +8,13 @@
 
 import SpriteKit
 
+enum ColliderType: UInt32 {
+    case Ship = 1
+    case Meteor = 2
+    case Laser = 4
+    case Wall = 8
+}
+
 extension SKSpriteNode {
     func lookAt(location: CGPoint) {
         let dx = location.x - self.position.x
@@ -25,7 +32,11 @@ func randPoint(bounds:CGRect) -> CGPoint {
         y: randFloat(CGRectGetMinY(bounds), CGRectGetMaxY(bounds)))
 }
 
-class GameScene: SKScene {
+func randVector(min:CGFloat, max:CGFloat) -> CGVector {
+    return CGVectorMake(randFloat(min, max), randFloat(min, max))
+}
+
+class GameScene: SKScene, SKPhysicsContactDelegate {
 
     var lastTime = NSDate().timeIntervalSinceReferenceDate
     var bg:Background
@@ -60,10 +71,17 @@ class GameScene: SKScene {
         var flingRecognizer = UIPanGestureRecognizer(target: self, action:"fling:")
         self.view.addGestureRecognizer(flingRecognizer)
 
-        for _ in 1...6 {
+        self.physicsWorld.contactDelegate = self
+        self.physicsWorld.gravity = CGVectorMake(0, 0)
+        let walls = SKPhysicsBody(edgeLoopFromRect: self.frame)
+        walls.friction = 0
+        walls.categoryBitMask = ColliderType.Wall.toRaw()
+        self.physicsBody = walls
+
+        for _ in 1...4 {
             var meteor = Meteor(bounds: self.frame)
-            self.meteors += meteor
             self.addChild(meteor)
+            meteor.activate()
         }
     }
 
@@ -102,6 +120,9 @@ class GameScene: SKScene {
         for touch: AnyObject in touches {
             let touchLocation = touch.locationInNode(self)
             self.player.lookAt(touchLocation)
+            let m = Meteor(position: touchLocation, meteorType: .Big)
+            self.addChild(m)
+            m.activate()
         }
     }
 
@@ -110,9 +131,24 @@ class GameScene: SKScene {
         bg.update(currentTime)
         player.update(currentTime - self.lastTime)
         self.lastTime = currentTime
+    }
 
-        for m in self.meteors {
-            m.update(currentTime - self.lastTime)
+    func didBeginContact(contact: SKPhysicsContact) {
+        switch contact.bodyA.categoryBitMask {
+        case ColliderType.Meteor.toRaw():
+            if contact.bodyB.categoryBitMask == ColliderType.Laser.toRaw() {
+                (contact.bodyA.node as Meteor).hit()
+                contact.bodyB.node.removeFromParent()
+                contact.bodyB.categoryBitMask = 0
+            }
+        case ColliderType.Laser.toRaw():
+            if contact.bodyB.categoryBitMask == ColliderType.Meteor.toRaw() {
+                (contact.bodyB.node as Meteor).hit()
+                contact.bodyA.node.removeFromParent()
+                contact.bodyA.categoryBitMask = 0
+            }
+        default:
+            break
         }
     }
 }

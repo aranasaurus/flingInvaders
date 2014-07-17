@@ -21,6 +21,8 @@ class Player:SKSpriteNode {
         ]
         let tx = SKTexture(imageNamed: "player.png")
         super.init(texture: tx, color: UIColor.clearColor(), size: tx.size())
+        self.xScale = 0.66
+        self.yScale = 0.66
     }
 
     func fire(sourceLoc:CGPoint, targetLoc:CGPoint, touchVelocity:CGPoint) {
@@ -39,6 +41,7 @@ class Player:SKSpriteNode {
             return
         }
 
+        laser.configurePhysicsBody()
         let damper = 0.33
         let velocity = CGPoint(x:touchVelocity.x * damper, y:-touchVelocity.y * damper)
         laser.velocity = velocity
@@ -58,7 +61,6 @@ class Player:SKSpriteNode {
         // move target ahead 1 second at a time until it is offscreen
         var targetLoc = CGPoint(x: laser.position.x + laser.velocity.x, y: laser.position.y + laser.velocity.y)
         while targetLoc.y < CGRectGetMaxY(self.scene.frame) {
-            NSLog("here")
             targetLoc = CGPoint(x: targetLoc.x + laser.velocity.x, y: targetLoc.y + laser.velocity.y)
         }
         laser.lookAt(targetLoc)
