@@ -33,7 +33,6 @@ class Meteor: SKSpriteNode {
         switch self.meteorType {
         case .Small:
             NSLog("+10")
-            self.removeFromParent()
         case .Big:
             NSLog("+1")
 
@@ -44,9 +43,22 @@ class Meteor: SKSpriteNode {
             let m2 = Meteor(position: self.position, meteorType: .Small)
             self.parent.addChild(m2)
             m2.activate()
-
-            self.removeFromParent()
         }
+
+        let blast = SKSpriteNode(imageNamed: "laserRedShot.png")
+        blast.xScale = 0.16
+        blast.yScale = 0.16
+        blast.zPosition = self.zPosition + 1
+        blast.position = self.position
+        self.scene.addChild(blast)
+        let dur = 0.88
+        let group = SKAction.group([
+            SKAction.scaleTo(1.33, duration: dur),
+            SKAction.fadeOutWithDuration(dur)
+            ])
+        blast.runAction(group, completion: { blast.removeFromParent() })
+
+        self.removeFromParent()
     }
 
     func activate() {

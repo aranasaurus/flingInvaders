@@ -47,15 +47,24 @@ class Player:SKSpriteNode {
         laser.velocity = velocity
         laser.active = true
 
+        let shot = SKSpriteNode(imageNamed: "laserGreenShot.png")
+        shot.xScale = 0.16
+        shot.yScale = 0.16
+        shot.zPosition = self.zPosition + 1
+        self.addChild(shot)
+
         // Fire from left/right/center of ship based on where the fling began
         let center = CGRectGetMidX(self.scene.frame)
         let fudge = self.size.width/2
         if sourceLoc.x <= center - fudge {
             laser.position = CGPoint(x: CGRectGetMinX(self.frame), y: CGRectGetMidY(self.frame))
+            shot.position = CGPoint(x: -self.frame.width/2 - 8, y: 16)
         } else if sourceLoc.x >= center + fudge {
             laser.position = CGPoint(x: CGRectGetMaxX(self.frame), y: CGRectGetMidY(self.frame))
+            shot.position = CGPoint(x: self.frame.width/2 + 8, y: 16)
         } else {
             laser.position = CGPoint(x: CGRectGetMidX(self.frame), y: CGRectGetMidY(self.frame))
+            shot.position = CGPoint(x: 0, y: self.frame.height/2 + 14)
         }
 
         // move target ahead 1 second at a time until it is offscreen
@@ -66,6 +75,13 @@ class Player:SKSpriteNode {
         laser.lookAt(targetLoc)
         self.lookAt(targetLoc)
         self.scene.addChild(laser)
+
+        let dur = 0.22
+        let group = SKAction.group([
+            SKAction.fadeOutWithDuration(dur),
+            SKAction.scaleTo(1, duration: dur)
+            ])
+        shot.runAction(group, completion: { shot.removeFromParent() })
     }
 
     func update(deltaTime:NSTimeInterval) {
